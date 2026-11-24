@@ -1,0 +1,6 @@
+{
+  // Our code only. `next build` checks its own generated route types under .next/.
+  "extends": "./tsconfig.json",
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", ".next"]
+}

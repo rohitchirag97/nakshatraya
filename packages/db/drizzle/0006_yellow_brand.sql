@@ -1,0 +1,1 @@
+ALTER TABLE "tenants" ALTER COLUMN "brand_color" SET DEFAULT '#e5a322';

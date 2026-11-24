@@ -1,0 +1,47 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "jyotish-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-23",
+  "compatibility_flags": ["nodejs_compat"],
+  // Run near the database (Mumbai) rather than near each user: every request does several queries.
+  "placement": { "mode": "smart" },
+  // Workers Logs: errors and request logs in the dashboard (chosen over Sentry). Alert on error rate there.
+  "observability": { "enabled": true, "head_sampling_rate": 1 },
+  "vars": {
+    "APP_DOMAIN": "localhost",
+    "ENVIRONMENT": "development",
+    "WEB_ORIGIN": "http://{host}:3001",
+    "TRUST_FORWARDED_HOST": "1",
+    // Local only: Pay marks orders paid without Razorpay. Vars aren't inherited by env.production.
+    "DEV_FAKE_PAYMENTS": "1"
+  },
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      // Replace with `wrangler hyperdrive create jyotish --connection-string=<Mumbai Postgres, app_user>`.
+      "id": "00000000000000000000000000000000",
+      "localConnectionString": "postgres://app_user:app_user@localhost:5432/jyotish"
+    }
+  ],
+  "browser": { "binding": "BROWSER" },
+  "r2_buckets": [{ "binding": "REPORTS", "bucket_name": "jyotish-reports" }],
+  // Secrets (wrangler secret put / .dev.vars): UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN,
+  // PLATFORM_ADMIN_TOKEN, REPORT_TOKEN_SECRET, RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET, RAZORPAY_WEBHOOK_SECRET,
+  // WEB_PROXY_SECRET (same value as the Vercel project's WEB_PROXY_SECRET env var)
+  "env": {
+    "production": {
+      // Whole tenant host: /api/* is this Worker, every other path is proxied to the Next app on Vercel.
+      "routes": [{ "pattern": "*.ourapp.in/*", "zone_name": "ourapp.in" }],
+      "vars": {
+        "APP_DOMAIN": "ourapp.in",
+        "ENVIRONMENT": "production",
+        "WEB_ORIGIN": "https://{host}",
+        "WEB_UPSTREAM": "https://jyotish-web.vercel.app"
+      },
+      "hyperdrive": [{ "binding": "HYPERDRIVE", "id": "00000000000000000000000000000000" }],
+      "browser": { "binding": "BROWSER" },
+      "r2_buckets": [{ "binding": "REPORTS", "bucket_name": "jyotish-reports" }]
+    }
+  }
+}

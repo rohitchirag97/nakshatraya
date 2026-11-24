@@ -1,0 +1,17 @@
+{
+  "files": {
+    "includes": [
+      "**",
+      "!**/drizzle/meta",
+      "!**/*.md",
+      "!**/.next",
+      "!**/.wrangler",
+      "!**/next-env.d.ts",
+      "!**/.gstack"
+    ]
+  },
+  "formatter": { "indentStyle": "space", "lineWidth": 100 },
+  "linter": {
+    "rules": { "style": { "noNonNullAssertion": "off", "noDescendingSpecificity": "off" } }
+  }
+}

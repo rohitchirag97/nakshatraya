@@ -1,0 +1,33 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env: { POSTGRES_PASSWORD: postgres, POSTGRES_DB: jyotish }
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 5s --health-retries 10
+      redis:
+        image: redis:7
+      # Upstash REST protocol in front of redis, same client as the Worker uses in production.
+      redis-http:
+        image: hiett/serverless-redis-http:latest
+        env: { SRH_MODE: env, SRH_TOKEN: local-token, SRH_CONNECTION_STRING: "redis://redis:6379" }
+        ports: ["8079:80"]
+    env:
+      DATABASE_URL: postgres://app_user:app_user@localhost:5432/jyotish
+      DATABASE_OWNER_URL: postgres://postgres:postgres@localhost:5432/jyotish
+      UPSTASH_REDIS_REST_URL: http://localhost:8079
+      UPSTASH_REDIS_REST_TOKEN: local-token
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run lint
+      - run: bun run typecheck
+      - run: bun run licenses
+      - run: psql "$DATABASE_OWNER_URL" -f db/init.sql
+      - run: bun run db:migrate
+      - run: bun test

@@ -1,0 +1,24 @@
+{
+  "name": "jyotish",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "server"
+  ],
+  "scripts": {
+    "lint": "biome check .",
+    "typecheck": "tsc --noEmit && bun --cwd apps/web tsc --noEmit -p tsconfig.check.json",
+    "licenses": "bun scripts/check-licenses.ts",
+    "db:generate": "bun --cwd packages/db drizzle-kit generate",
+    "db:migrate": "bun packages/db/src/migrate.ts",
+    "platform:add-admin": "bun packages/db/src/add-platform-admin.ts",
+    "test": "bun test",
+    "dev:api": "bun --cwd server wrangler dev"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.8",
+    "@types/bun": "^1.4.5",
+    "typescript": "^7.0.2"
+  }
+}
